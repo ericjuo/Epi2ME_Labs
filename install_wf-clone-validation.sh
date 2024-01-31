@@ -33,45 +33,27 @@ sdk install java 17.0.6-amzn
 wget -qO- https://get.nextflow.io | bash
 chmod +x nextflow
 
-# !Move nextflow executable to the place $PATH can access to, so that nextflow can be sourced at any place.
+# Install docker
+# # Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
 
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
 
-# Singularity also requires several dependencies. Before install singularity, Go language needs to be installed beforehand.
-# Several dependencies
-# Update and install several dependencies for Singularity
-sudo apt-get update && sudo apt-get install -y \
-    build-essential \
-    libssl-dev \
-    uuid-dev \
-    libgpgme11-dev \
-    squashfs-tools \
-    libseccomp-dev \
-    pkg-config
+# Install latest version of docker
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# GO installation
+# Test run docker
+sudo docker run hello-world
 
-wget -q "https://go.dev/dl/go1.21.6.linux-amd64.tar.gz"
-rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.6.linux-amd64.tar.gz
-echo PATH=$PATH:/usr/local/go/bin >> $HOME/.profile
-go version
-
-# Singularity installation
-export VERSION=3.0.3 && # adjust this as necessary \
-    mkdir -p $GOPATH/src/github.com/sylabs && \
-    cd $GOPATH/src/github.com/sylabs && \
-    wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-${VERSION}.tar.gz && \ 
-    tar -xzf singularity-${VERSION}.tar.gz && \
-    cd ./singularity && \
-    ./mconfig
-
-./mconfig && \
-    make -C ./builddir && \
-    sudo make -C ./builddir install
-
-# !Add the following command to ~/.bashrc file, so that bash completion is available in singulairty.
-# . /usr/local/etc/bash_completion.d/singularity
-
-# Obtain wf-clone-validation 
-nextflow run epi2me-labs/wf-clone-validation –help
-
+# Obtain wf-clone-validation and show instrucitons
+nextflow run epi2me-labs/wf-clone-validation --help
 
